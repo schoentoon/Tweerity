@@ -1,0 +1,108 @@
+#!/usr/bin/env python2
+
+import sys, os, imp
+from textwrap import dedent as trim
+import bot
+
+dotdir = os.getcwd()
+
+def check_python_version(): 
+  if sys.version_info < (2, 4): 
+    error = 'Error: Requires Python 2.4 or later, from www.python.org'
+    print >> sys.stderr, error
+    sys.exit(1)
+
+def create_default_config(fn):
+  import twoauth
+  ckey='fhGWsi5X64CCGzJ7LjI9Sw' #Ugh, this is the problem with open source and twitter clients
+  csecret='jANLXQFGVIK0qYaCfbAIziHZXfdcg6g3pGLHOkU0' #This stuff is supposed be secret!
+  oauth = twoauth.oauth(ckey, csecret) #You haven't seen any of this, m'kay.
+  req_token = oauth.request_token()
+  url = oauth.authorize_url(req_token)
+  print "Please authorize at: %s" % (url)
+  pin = raw_input("PIN: ")
+  try: acc_token = oauth.access_token(req_token, pin)
+  except:
+    print >> sys.stderr, "Unauthorized, please run the script again and authorize correctly."
+    sys.exit(1)
+  f = open(fn, 'w')
+  print >> f, trim("""\
+  screen_name = '%s'
+  access_key = '%s'
+  access_secret = '%s'
+
+  # Modules to exclude
+  # exclude = []
+
+  # If you want to enumerate a list of modules rather than disabling
+  # some, use "enable = ['example']", which takes precedent over exclude
+  # enable = []
+
+  # Directories to load user modules from
+  # e.g. /path/to/my/modules
+  # extra = []
+  # EOF
+  """ % (acc_token['screen_name'], acc_token['oauth_token'], acc_token['oauth_token_secret']))
+  f.close()
+  print >> sys.stderr, "Succesfully authorized, starting now."
+
+def create_dotconfig(dotdir): 
+  default = os.path.join(dotdir, '.tweerity.py')
+  create_default_config(default)
+
+def check_dotconfig(): 
+  if not os.path.isfile('.tweerity.py'): 
+    create_dotconfig(dotdir)
+
+def config_names(config): 
+  config = config or '.tweerity'
+
+  def files(d): 
+    names = os.listdir(d)
+    return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
+
+  here = os.path.join('.', config)
+  if os.path.isfile(here): 
+    return [here]
+  if os.path.isfile(here + '.py'): 
+    return [here + '.py']
+  if os.path.isdir(here): 
+    return files(here)
+
+  there = os.path.join(dotdir, config)
+  if os.path.isfile(there): 
+    return [there]
+  if os.path.isfile(there + '.py'): 
+    return [there + '.py']
+  if os.path.isdir(there): 
+    return files(there)
+
+  print >> sys.stderr, "Error: Can't find the config file!"
+  print >> sys.stderr, 'What happened to .tweerity.py?'
+  sys.exit(1)
+
+def main(argv=None): 
+  check_python_version()
+  check_dotconfig()
+  module = imp.load_source('.tweerity.py','.tweerity.py')
+  module.filename = '.tweerity.py'
+
+  if module.access_key == "######":
+    error = ('Error: you must edit the config file first!\n' +
+              "You're currently using %s" % module.filename)
+    print >> sys.stderr, error
+    sys.exit(1)
+
+  if module.access_secret == "######":
+    error = ('Error: you must edit the config file first!\n' +
+              "You're currently using %s" % module.filename)
+    print >> sys.stderr, error
+    sys.exit(1)
+
+  p = bot.Tweerity(module)
+  try: p.run()
+  except KeyboardInterrupt:
+    p.streaming.stop()
+
+if __name__ == '__main__': 
+  main()
