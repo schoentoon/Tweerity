@@ -1,2 +1,101 @@
+ _____                        _ _         
+|_   _|_      _____  ___ _ __(_) |_ _   _ 
+  | | \ \ /\ / / _ \/ _ \ '__| | __| | | |
+  | |  \ V  V /  __/  __/ |  | | |_| |_| |
+  |_|   \_/\_/ \___|\___|_|  |_|\__|\__, |
+                                    |___/
 This application allows you to make simple new applications that make use of the twitter streaming api.
-Simple make modules in the folder modules, there is an example. More examples may follow in the future.
+Simply make modules in the modules folder, here is an example of what a module will look like.
+
+def module(api, json):
+  //Do stuff here
+
+module.event = 'tweet'
+
+Important to note that it must have something like module.event = ... in order for it to be loaded.
+    api will be a twoauth api object for the user, with this you can do thing like tweet, follow, etc.
+all the supported functions of this twoauth api object are listed below.
+    public_timeline()
+    home_timeline()
+    friends_timeline()
+    user_timeline(user)
+    mentions()
+    retweeted_by_me()
+    retweeted_to_me()
+    retweets_of_me()
+    status_show(status_id)
+    status_update(status)
+    status_destroy(status_id)
+    status_retweet(status_id)
+    status_retweets(status_id)
+    status_retweeted_by(status_id)
+    status_retweeted_by_ids(status_id)
+    user_show(user)
+    user_lookup(user)
+    user_search(query)
+    users_suggestions()
+    users_sugesstions_category(category)
+    lists_create(name)
+    lists_update(list_id)
+    lists_index()
+    lists_show(list_id)
+    lists_destroy(list_id)
+    lists_statuses(list_id)
+    lists_membership()
+    lists_subscriptions()
+    lists_mlist(list_id)
+    lists_madd(member,list_id)
+    lists_mremove(member,list_id)
+    lists_slist(list_id)
+    lists_sadd(list_id)
+    lists_sremove(list_id)
+    dm_list()
+    dm_sent()
+    dm_destroy()
+    dm_new(user,text)
+    friends_create(user)
+    friends_destroy(user)
+    friends_show(target)
+    friends_incoming()
+    friends_outgoing()
+    friends_ids(user)
+    followers_ids(user)
+    verify_credentials()
+    rate_limit()
+    profile_colors()
+    profile_image(image)
+    profile_background_image(image)
+    profile()
+    favorites(user)
+    favorite_create(status_id)
+    favorite_destroy(status_id)
+    block_create(user)
+    block_destroy(user)
+    block_exists(user)
+    block_list()
+    block_ids()
+    report_spam(user)
+This was just a quick documentation on the functions in the twoauth api object
+all of these support the parameters listed on http://twitterapi.pbworks.com/w/page/22554679/Twitter-API-Documentation
+Please keep in mind that I did not make twoauth, I only included the correct version in this project (most versions don't have streaming support)
+
+Now for the events possible in the streaming api, I'll try to document this as much as possible since twitter is too lazy to do this properly.
+The following events are possible in the streaming api.
+    block
+    unblock
+    favorite
+    unfavorite
+    follow
+    list_member_added
+    list_created
+    list_destroyed
+    list_member_removed
+    list_updated
+    list_user_subscribed
+    list_user_unsubscribed
+    scrub_geo
+    user_update
+As you can see both 'tweet' and 'delete' aren't real events, yet they're used in modules/test.py you may safely use them though.
+I'll make a file later one with documentation on most of the events listed above and both the tweet and delete 'event'.
+
+Have fun using Tweerity!
