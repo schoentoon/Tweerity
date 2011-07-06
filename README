@@ -98,4 +98,8 @@ The following events are possible in the streaming api.
 As you can see both 'tweet' and 'delete' aren't real events, yet they're used in modules/test.py you may safely use them though.
 I'll make a file later one with documentation on most of the events listed above and both the tweet and delete 'event'.
 
+Credits:
+  @Schoentoon - Main program
+  @Quanno2 - Icon design for twitter application
+
 Have fun using Tweerity!

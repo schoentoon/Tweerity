@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 import re
 
 def remove_html_tags(data):
