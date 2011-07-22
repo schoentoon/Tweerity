@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 import re
 
 def remove_html_tags(data):
@@ -22,8 +22,29 @@ def tweet(api, json):
           remove_html_tags(json['source']),
           json['created_at'])
 
-tweet.event = 'tweet'
+tweet.event = 'nomention'
 tweet.priority = 'high'
+
+def mention(api, json):
+  keys = json.viewkeys()
+  if 'retweeted_status' in keys:
+    print "\033[91m%s%s\033[0m: %s\nretweeted by \033[91m%s\033[0m via %s at %s" % (
+          " "*int(15-len(json['retweeted_status']['user']['screen_name'])),
+          json['retweeted_status']['user']['screen_name'],
+          json['retweeted_status']['text'].replace("\n","").replace("\r",""),
+          json['user']['screen_name'],
+          remove_html_tags(json['source']),
+          json['created_at'])
+  else:
+    print "\033[91m%s%s\033[0m: %s\nvia %s at %s" % (
+          " "*int(15-len(json['user']['screen_name'])),
+          json['user']['screen_name'],
+          json['text'].replace("\n","").replace("\r",""),
+          remove_html_tags(json['source']),
+          json['created_at'])
+
+mention.event = 'mention'
+mention.priority = 'high'
 
 def delete(api, json):
   print "Tweet with id %s is deleted." % (

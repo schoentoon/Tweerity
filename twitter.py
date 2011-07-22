@@ -3,7 +3,7 @@ import sys, re, time, threading
 import twoauth, twoauth.streaming
 
 class Bot(): 
-  def __init__(self, access_key, access_secret):
+  def __init__(self, access_key, access_secret, screen_name):
     self.access_key = access_key
     self.access_secret = access_secret
     self.oauth=twoauth.oauth('fhGWsi5X64CCGzJ7LjI9Sw',
@@ -14,23 +14,39 @@ class Bot():
                          'jANLXQFGVIK0qYaCfbAIziHZXfdcg6g3pGLHOkU0',
                          self.access_key,
                          self.access_secret)
+    self.screen_name = screen_name
     self.verbose = True
     self.sending = threading.RLock()
+    self.friends = []
 
   def run(self):
     s=twoauth.streaming.StreamingAPI(self.oauth)
-    self.streaming=s.user()
-    self.streaming.start()
+    self.userstream=s.user()
+    self.userstream.start()
+    self.mentions=s.filter(track=["@%s" % self.screen_name])
+    self.mentions.start()
     while True:
-      try: status=self.streaming.pop()
+      try: status=self.userstream.pop()
       except KeyboardInterrupt:
-        self.streaming.stop()
+        self.userstream.stop()
+        self.mentions.stop()
         sys.exit(0)
       for i in status:
         try:
           self.dispatch(self.api, i)
         except:
           pass
+      try: status=self.mentions.pop()
+      except KeyboardInterrupt:
+        self.userstream.stop()
+        self.mentions.stop()
+        sys.exit(0)
+      for i in status:
+        if i['user']['id'] not in self.friends:
+          try:
+            self.dispatch(self.api, i)
+          except:
+            pass
 
   def dispatch(self, api, args):
     pass

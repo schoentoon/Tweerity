@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import sys, os, imp
 from textwrap import dedent as trim
@@ -54,55 +54,17 @@ def check_dotconfig():
   if not os.path.isfile('.tweerity.py'): 
     create_dotconfig(dotdir)
 
-def config_names(config): 
-  config = config or '.tweerity'
-
-  def files(d): 
-    names = os.listdir(d)
-    return list(os.path.join(d, fn) for fn in names if fn.endswith('.py'))
-
-  here = os.path.join('.', config)
-  if os.path.isfile(here): 
-    return [here]
-  if os.path.isfile(here + '.py'): 
-    return [here + '.py']
-  if os.path.isdir(here): 
-    return files(here)
-
-  there = os.path.join(dotdir, config)
-  if os.path.isfile(there): 
-    return [there]
-  if os.path.isfile(there + '.py'): 
-    return [there + '.py']
-  if os.path.isdir(there): 
-    return files(there)
-
-  print >> sys.stderr, "Error: Can't find the config file!"
-  print >> sys.stderr, 'What happened to .tweerity.py?'
-  sys.exit(1)
-
 def main(argv=None): 
   check_python_version()
   check_dotconfig()
   module = imp.load_source('.tweerity.py','.tweerity.py')
   module.filename = '.tweerity.py'
 
-  if module.access_key == "######":
-    error = ('Error: you must edit the config file first!\n' +
-              "You're currently using %s" % module.filename)
-    print >> sys.stderr, error
-    sys.exit(1)
-
-  if module.access_secret == "######":
-    error = ('Error: you must edit the config file first!\n' +
-              "You're currently using %s" % module.filename)
-    print >> sys.stderr, error
-    sys.exit(1)
-
   p = bot.Tweerity(module)
   try: p.run()
   except KeyboardInterrupt:
-    p.streaming.stop()
+    p.userstream.stop()
+    p.mentions.stop()
 
 if __name__ == '__main__': 
   main()

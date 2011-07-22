@@ -4,17 +4,9 @@ import twitter
 
 home = os.getcwd()
 
-def decode(bytes): 
-  try: text = bytes.decode('utf-8')
-  except UnicodeDecodeError: 
-    try: text = bytes.decode('iso-8859-1')
-    except UnicodeDecodeError: 
-      text = bytes.decode('cp1252')
-  return text
-
 class Tweerity(twitter.Bot): 
   def __init__(self, config): 
-    args = (config.access_key, config.access_secret)
+    args = (config.access_key, config.access_secret, config.screen_name)
     twitter.Bot.__init__(self, *args)
     self.config = config
     self.stats = {}
@@ -104,25 +96,40 @@ class Tweerity(twitter.Bot):
 
   def dispatch(self, api, json):
     keys=json.viewkeys()
+    if 'event' in keys:
+      if json['event'] == 'follow':
+        if json['source']['screen_name'] == self.config.screen_name:
+          self.friends.append(json['target']['id'])
     if "friends" not in keys:
       if 'event' in keys:
-        event = json['event']
+        events = [json['event']]
       elif 'direct_message' in keys:
-        event = 'direct_message'
+        events = ['direct_message']
       elif 'delete' in keys:
-        event = 'delete'
+        events = ['delete']
       else:
-        event = 'tweet'
+        events = ['tweet']
+        if 'retweeted_status' in keys:
+          if ("@%s" % (self.config.screen_name)).lower() in json['retweeted_status']['text'].lower():
+            events.append('mention')
+        elif 'text' in keys:
+          if ("@%s" % (self.config.screen_name)).lower() in json['text'].lower():
+            events.append('mention')
+        if 'tweet' in events and 'mention' not in events:
+          events.append('nomention')
       for priority in ('high', 'medium', 'low'):
         funcs = self.commands[priority]
         for func in funcs:
-          if event == func.event:
+          if func.event in events:
             if func.thread:
               targs = (func, api, json)
               t = threading.Thread(target=self.call, args=targs)
               t.start()
             else:
               self.call(func, api, json)
+    else:
+      for i in json["friends"]:
+        self.friends.append(i)
 
 if __name__ == '__main__': 
    print __doc__
