@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys, os, re, threading, imp
 import twitter
+import signal
 
 home = os.getcwd()
 
@@ -11,8 +12,9 @@ class Tweerity(twitter.Bot):
     self.config = config
     self.stats = {}
     self.setup()
+    signal.signal(signal.SIGHUP, self.setup)
 
-  def setup(self): 
+  def setup(self, signum=1, frame=None): 
     self.variables = {}
 
     filenames = []

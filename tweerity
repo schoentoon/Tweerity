@@ -59,7 +59,8 @@ def main(argv=None):
   check_dotconfig()
   module = imp.load_source('.tweerity.py','.tweerity.py')
   module.filename = '.tweerity.py'
-
+  print "To reload the modules directory for new or modified modules, please send a SIGHUP to %s" % (os.getpid())
+  print "This will also unload removed modules."
   p = bot.Tweerity(module)
   try: p.run()
   except KeyboardInterrupt:
