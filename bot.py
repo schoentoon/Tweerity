@@ -6,9 +6,8 @@ import signal
 home = os.getcwd()
 
 class Tweerity(twitter.Bot): 
-  def __init__(self, config): 
-    args = (config.access_key, config.access_secret, config.screen_name)
-    twitter.Bot.__init__(self, *args)
+  def __init__(self, config):
+    twitter.Bot.__init__(self, config.access_key, config.access_secret, config.screen_name)
     self.config = config
     self.stats = {}
     self.setup()
@@ -16,7 +15,6 @@ class Tweerity(twitter.Bot):
 
   def setup(self, signum=1, frame=None): 
     self.variables = {}
-
     filenames = []
     if not hasattr(self.config, 'enable'): 
       for fn in os.listdir(os.path.join(home, 'modules')): 
@@ -25,7 +23,6 @@ class Tweerity(twitter.Bot):
     else: 
       for fn in self.config.enable: 
         filenames.append(os.path.join(home, 'modules', fn + '.py'))
-
     if hasattr(self.config, 'extra'): 
       for fn in self.config.extra: 
         if os.path.isfile(fn): 
@@ -34,7 +31,6 @@ class Tweerity(twitter.Bot):
           for n in os.listdir(fn): 
             if n.endswith('.py') and not n.startswith('_'): 
               filenames.append(os.path.join(fn, n))
-
     modules = []
     excluded_modules = getattr(self.config, 'exclude', [])
     for filename in filenames: 
@@ -50,13 +46,11 @@ class Tweerity(twitter.Bot):
           module.setup(self)
         self.register(vars(module))
         modules.append(name)
-
     if modules: 
       print >> sys.stderr, 'Registered modules:', ', '.join(modules)
     else:
       print >> sys.stderr, "Warning: Couldn't find any modules"
       sys.exit(1)
-
     self.bind_commands()
 
   def register(self, variables):
@@ -120,13 +114,10 @@ class Tweerity(twitter.Bot):
         if 'tweet' in events and 'mention' not in events:
           events.append('nomention')
       for priority in ('high', 'medium', 'low'):
-        funcs = self.commands[priority]
-        for func in funcs:
+        for func in self.commands[priority]:
           if func.event in events:
             if func.thread:
-              targs = (func, api, json)
-              t = threading.Thread(target=self.call, args=targs)
-              t.start()
+              threading.Thread(target=self.call, args=(func, api, json)).start()
             else:
               self.call(func, api, json)
     else:

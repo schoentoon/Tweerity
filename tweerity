@@ -64,8 +64,7 @@ def main(argv=None):
   p = bot.Tweerity(module)
   try: p.run()
   except KeyboardInterrupt:
-    p.userstream.stop()
-    p.mentions.stop()
+    p.stop()
 
 if __name__ == '__main__': 
   main()
