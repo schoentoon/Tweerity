@@ -25,8 +25,6 @@ class Bot():
     s=twoauth.streaming.StreamingAPI(self.oauth)
     self.userstream=s.user()
     self.userstream.start()
-    self.mentions=s.filter(track=["@%s" % self.screen_name])
-    self.mentions.start()
     while True:
       try: status=self.userstream.pop()
       except KeyboardInterrupt:
@@ -36,15 +34,6 @@ class Bot():
           self.dispatch(self.api, i)
         except:
           pass
-      try: status=self.mentions.pop()
-      except KeyboardInterrupt:
-        self.stop()
-      for i in status:
-        if i['user']['id'] not in self.friends:
-          try:
-            self.dispatch(self.api, i)
-          except:
-            pass
 
   def dispatch(self, api, args):
     pass
